@@ -1,0 +1,5 @@
+scraper:
+  mongo_uri: "mongodb://localhost"
+  decware_url: "https://orders.decware.com/list_view.php"
+  log_file: "decware_waitinglist_scraper.log"
+  database_name: decware_log
