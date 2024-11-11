@@ -161,7 +161,6 @@ before_bill = 0
 total_new = 0
 non_new = 0
 bill_order_dt = datetime(2024, 11, 3, 16, 34)
-bill_order_secs = bill_order_dt.timestamp()
 
 logging.info(f"Entry processing stats - average: {entry_procesing_time_avg} max: {entry_procesing_time_max} 99th percentile: {entry_procesing_time_pcnt} total time: {entry_procesing_time_sum}")
 

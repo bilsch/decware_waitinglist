@@ -1,5 +1,7 @@
 requests
+pyyaml
 bs4
 pymongo
 numpy
 dataclasses_json
+dataclass_csv
