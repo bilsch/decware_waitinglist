@@ -6,6 +6,8 @@ Please be kind to decware they are a small shop hand-crafting electronics.
 
 ## Why this was written
 
+First and foremost - this is a little utility I wrote on a whim. It's probably not great python code. It's probably got some innefficicies in it.
+
 I wrote this because I was bored, the weather sucked and I got curious. I wanted to know where I was in line, how long it was going to take to get my amp made etc.
 
 The code I have written only hits their api once a day. It is hopefully a non-issue for them. I'm sure there are people checking more frequently than that.
