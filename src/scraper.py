@@ -52,7 +52,6 @@ scrape_processing_times = []
 
 for table in table.find_all('tbody'):
    for row in table.find_all('tr'):
-      scrape_time_start = datetime.now().timestamp()
       table_data = row.find_all('td')
 
       date = datetime.strptime(table_data[0].text, "%Y-%m-%d %H:%M:%S")
@@ -66,17 +65,6 @@ for table in table.find_all('tbody'):
       status = table_data[8].text
 
       entries.append(Entry(date, name, state, quantity, model, base, voltage, options, status))
-
-      scrape_time_end = datetime.now().timestamp()
-      scrape_time = scrape_time_end - scrape_time_start
-      scrape_processing_times.append(scrape_time)
-
-scrape_procesing_time_avg = np.mean(scrape_processing_times)
-scrape_procesing_time_max = np.max(scrape_processing_times)
-scrape_procesing_time_pcnt = np.percentile(scrape_processing_times, 99)
-scrape_procesing_time_sum = np.sum(scrape_processing_times)
-
-logging.info(f"scrape processing stats - average: {scrape_procesing_time_avg} max: {scrape_procesing_time_max} 99th percentile: {scrape_procesing_time_pcnt} total time: {scrape_procesing_time_sum}")
 
 logging.debug("connect to mongo")
 mc = MongoClient(Config().mongo_uri())
@@ -99,7 +87,6 @@ entry_procesing_times = []
 
 logging.info("Comparing database entries to decware state")
 for entry in entries:
-   entry_start_time = datetime.now().timestamp()
 
    # This should be unique enough
    db_entry = entry_col.find_one({'date': entry.date, 'name': entry.name, 'model': entry.model})
@@ -115,10 +102,6 @@ for entry in entries:
 
       logging.debug("Calculating processing time and appending")
       logging.info(f"New entry id: {insert_id} for {entry.name} model {entry.model}")
-
-      entry_end_time = datetime.now().timestamp()
-      processing_time = entry_end_time - entry_start_time
-      entry_procesing_times.append(processing_time)
    else:
       # If we already have it in entry table go see if we have a log event matching the status
       db_name = db_entry.get("name")
@@ -136,29 +119,12 @@ for entry in entries:
          # We have already recorded this status just continue to the next record
          logging.debug("Skipping {entry} as we already indexed in present state")
          skipped += 1
-
-         logging.debug("Calculating processing time and appending")
-         entry_end_time = datetime.now().timestamp()
-         processing_time = entry_end_time - entry_start_time
-         entry_procesing_times.append(processing_time)
       else:
          new_log_entries += 1
          log_entry = LogEntry(entry.date, entry_id, entry.status)
          log_result = log_col.insert_one(log_entry.to_dict())
          log_id = log_result.inserted_id
          logging.info(f"Stored new event {entry_id} and log_id {log_id} status: {status}")
-
-         logging.debug("Calculating processing time and appending")
-         entry_end_time = datetime.now().timestamp()
-         processing_time = entry_end_time - entry_start_time
-         entry_procesing_times.append(processing_time)
-
-entry_procesing_time_avg = np.mean(entry_procesing_times)
-entry_procesing_time_max = np.max(entry_procesing_times)
-entry_procesing_time_pcnt = np.percentile(entry_procesing_times, 99)
-entry_procesing_time_sum = np.sum(entry_procesing_times)
-
-logging.info(f"Entry processing stats - average: {entry_procesing_time_avg} max: {entry_procesing_time_max} 99th percentile: {entry_procesing_time_pcnt} total time: {entry_procesing_time_sum}")
 
 #
 # Loop over database entries
@@ -169,7 +135,6 @@ logging.info(f"Entry processing stats - average: {entry_procesing_time_avg} max:
 logging.info("Finding database entries to mark as Complete")
 db_entries = entry_col.find({"status": { "$ne": "Complete" }})
 completed = 0
-# list of ObjectId to mark as complete
 
 for db_entry in db_entries:
    # loop over all entries
