@@ -15,8 +15,10 @@ complete_amps = entry_col.find({"status": "Complete"})
 
 for amp in complete_amps:
     id = amp.get("_id")
+    model = amp.get("model")
     order_date = amp.get("date")
     log = log_col.find_one({"entry_owner": id, "status": "Complete"})
     complete_date = log.get("date")
     diff = complete_date - order_date
-    print(f"{id} order date: {order_date} complete date: {complete_date} - diff: {diff}")
+
+    print(f"{id} model {model} order date: {order_date} complete date: {complete_date} - diff: {diff}")
