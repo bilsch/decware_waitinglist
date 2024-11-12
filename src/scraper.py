@@ -8,6 +8,7 @@ from datetime import datetime
 from pymongo import MongoClient
 from pymongo.collation import Collation
 import numpy as np
+from bson import ObjectId
 
 from dataclass import Entry, LogEntry, RunStat
 from Config import Config
@@ -157,19 +158,60 @@ entry_procesing_time_max = np.max(entry_procesing_times)
 entry_procesing_time_pcnt = np.percentile(entry_procesing_times, 99)
 entry_procesing_time_sum = np.sum(entry_procesing_times)
 
+logging.info(f"Entry processing stats - average: {entry_procesing_time_avg} max: {entry_procesing_time_max} 99th percentile: {entry_procesing_time_pcnt} total time: {entry_procesing_time_sum}")
+
+#
+# Loop over database entries
+#   - If we find an entry in the database which is not in entries 
+#     1) update its status to Complete
+#     2) log the Complete status
+#
+logging.info("Finding database entries to mark as Complete")
+db_entries = entry_col.find({"status": { "$ne": "Complete" }})
+completed = 0
+# list of ObjectId to mark as complete
+
+for db_entry in db_entries:
+   # loop over all entries
+   found = False
+
+   # Same logic as our find - compare name date and model to determine a match
+   for x in entries:
+      if x.name == db_entry.get("name") and x.date == db_entry.get("date") and x.model == db_entry.get("model"):
+         found = True
+         break
+
+   if found == False:
+      id = db_entry.get("_id")
+      status = db_entry.get("status")
+      logging.info(f"Updating {id} from status {status} - setting status to Complete")
+
+      # TODO: This ... should work
+      # update_result = db_entry.update({"$set": {"status": "Complete"}})
+      update_result = entry_col.update_one({"_id": id}, {"$set": {"status": "Complete"}})
+
+      logging.debug(update_result)
+      log_entry = LogEntry(datetime.now(), id, "Complete")
+      log_col.insert_one(log_entry.to_dict())
+
 before_bill = 0
 total_new = 0
 non_new = 0
 bill_order_dt = datetime(2024, 11, 3, 16, 34)
-
-logging.info(f"Entry processing stats - average: {entry_procesing_time_avg} max: {entry_procesing_time_max} 99th percentile: {entry_procesing_time_pcnt} total time: {entry_procesing_time_sum}")
 
 # The entry collection only ever shows new
 # We need to look in the log collection to calculate things that changed status since the initial
 logging.info("Generating stats")
 
 total_new_count = entry_col.count_documents({"status": "New"})
-non_new = entry_col.count_documents({"status": { "$ne": "New" }})
+non_new = entry_col.count_documents({
+   "status": 
+      [
+         { "$ne": "New" },
+         { "$ne": "Complete" }
+      ]
+   },
+)
 before_bill = entry_col.count_documents({ "date": { "$lt": bill_order_dt }, "status": "New" })
 
 status_breakdown = {}
@@ -197,8 +239,9 @@ logging.info(f"in-flight count: {non_new}")
 logging.info(f"Number of new before Bill: {before_bill}")
 logging.info(f"total new: {total_new_count}")
 logging.info(f"By-status breakdown: {status_breakdown}")
+logging.info(f"completed: {completed}")
 
-run_stats = RunStat(datetime.now(), inserted_entries, new_log_entries, non_new, skipped, before_bill, total_new_count, status_updates, status_breakdown)
+run_stats = RunStat(datetime.now(), inserted_entries, new_log_entries, non_new, skipped, before_bill, total_new_count, status_updates, status_breakdown, completed)
 logging.debug(f"Submitting stats: {run_stats}")
 stats_col.insert_one(run_stats.to_dict())
 

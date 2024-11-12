@@ -26,9 +26,6 @@ There are a few things missing:
     * The stats are logged
     * The stats are also persisted to a mongo collection
         * I may write a simple web app to replace using mongodb's dashboard
-1. I'm not sure what happens to an amp when they complete it
-    * I'm pretty sure based on what I'm seeing - it simply does not show up anymore
-    * If this is true a change in the scraper.py to find the database entries and look in the entries list and then updating status to Complete or something would suffice
 1. The scraper.py code is pretty inefficient in spots
     * The db comparison takes like 3 minutes for some reason. It may be because of the free tier db and slow queries
 1. The scraper.py code has a few hard-coded things
