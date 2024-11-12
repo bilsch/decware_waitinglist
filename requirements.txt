@@ -5,3 +5,4 @@ pymongo
 numpy
 dataclasses_json
 dataclass_csv
+lxml
