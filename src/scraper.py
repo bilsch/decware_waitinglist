@@ -182,6 +182,8 @@ for db_entry in db_entries:
          break
 
    if found == False:
+      inserted_entries += 1
+      new_log_entries += 1
       id = db_entry.get("_id")
       status = db_entry.get("status")
       logging.info(f"Updating {id} from status {status} - setting status to Complete")
