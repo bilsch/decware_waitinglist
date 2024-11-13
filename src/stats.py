@@ -9,7 +9,7 @@ from pymongo import MongoClient
 from pymongo.collation import Collation
 import numpy as np
 
-from dataclass import Entry, LogEntry, RunStat, CsvCount
+from dataclass import Entry, LogEntry, RunStat
 from Config import Config
 
 logging.basicConfig(
@@ -31,12 +31,6 @@ db = mc.get_database(Config().database_name())
 entry_col = db.get_collection("entries")
 log_col = db.get_collection("log")
 stats_col = db.get_collection("stats")
-
-bill_order_dt = datetime(2024, 11, 3, 16, 34)
-
-total_new_count = entry_col.count_documents({"status": "New"})
-non_new_count = entry_col.count_documents({"status": { "$ne": "New" }})
-before_bill_count = entry_col.count_documents({ "date": { "$lt": bill_order_dt }, "status": "New" })
 
 count_order_over_time_query = [
     {
@@ -81,3 +75,22 @@ with open("order_count.csv", "w+") as f:
 
     for row in orders_by_date_histo:
         f.writelines(f"{row}\n")
+
+# order count by amp model
+agg_result = entry_col.aggregate([
+   { 
+      "$group" :  {
+         "_id" : "$model",
+         "count" : {"$sum" : 1} 
+      }
+   } 
+])
+
+with open("model_stats.csv", "w+") as f:
+    f.write("model, count\n")
+
+    for i in agg_result: 
+        model = i.get("_id")
+        count = i.get("count")
+        
+        f.write(f"{model}, {count}\n")
