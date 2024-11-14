@@ -75,10 +75,6 @@ entry_col = db.get_collection("entries")
 log_col = db.get_collection("log")
 stats_col = db.get_collection("stats")
 
-# mongo indices for queries we are going to make
-entry_col.create_index({"date": 1, "name": 1, "model": 1})
-log_col.create_index({"entry_owner": 1, "status": 1})
-
 inserted_entries = 0
 new_log_entries = 0
 skipped = 0
