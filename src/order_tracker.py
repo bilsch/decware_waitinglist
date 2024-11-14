@@ -11,7 +11,7 @@ db = mc.get_database(Config().database_name())
 entry_col = db.get_collection("entries")
 log_col = db.get_collection("log")
 
-complete_amps = entry_col.find({"status": "Complete"})
+complete_amps = entry_col.find({"status": "Complete"}).sort("date")
 days = []
 
 for amp in complete_amps:
