@@ -177,23 +177,6 @@ non_new = entry_col.count_documents({
 )
 before_bill = entry_col.count_documents({ "date": { "$lt": bill_order_dt }, "status": "New" })
 
-status_breakdown = {}
-agg_result = entry_col.aggregate([
-   { 
-      "$group" :  {
-         "_id" : "$status",
-         "count" : {"$sum" : 1} 
-      }
-   } 
-])
-
-for i in agg_result: 
-   status = i.get("_id")
-   count = i.get("count")
-   status_breakdown[status] = count
-
-   logging.debug(f"Append {status}={count}")
-
 logging.info(f"Inserted {inserted_entries} new entries")
 logging.info(f"Inserted {new_log_entries} new log events")
 logging.info(f"skipped {skipped} entries with no new updates")
@@ -201,10 +184,9 @@ logging.info(f"status updates: {status_updates}")
 logging.info(f"in-flight count: {non_new}")
 logging.info(f"Number of new before Bill: {before_bill}")
 logging.info(f"total new: {total_new_count}")
-logging.info(f"By-status breakdown: {status_breakdown}")
 logging.info(f"completed: {completed}")
 
-run_stats = RunStat(datetime.now(), inserted_entries, new_log_entries, non_new, skipped, before_bill, total_new_count, status_updates, status_breakdown, completed)
+run_stats = RunStat(datetime.now(), inserted_entries, new_log_entries, non_new, skipped, before_bill, total_new_count, status_updates, completed)
 logging.debug(f"Submitting stats: {run_stats}")
 stats_col.insert_one(run_stats.to_dict())
 

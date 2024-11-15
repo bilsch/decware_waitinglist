@@ -37,5 +37,4 @@ class RunStat:
    before_bill: int
    total_new: int
    status_updates: int
-   status_breakdown: set
    completed: set
