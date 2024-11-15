@@ -143,6 +143,7 @@ for db_entry in db_entries:
          break
 
    if found == False:
+      completed += 1
       inserted_entries += 1
       new_log_entries += 1
       id = db_entry.get("_id")
