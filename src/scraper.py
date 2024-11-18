@@ -107,12 +107,12 @@ for entry in entries:
       if entry.status != db_status:
          logging.info(f"Update status for id: {entry_id} for {db_name} from status of ({db_status}) to ({entry.status})")
          db_entry.update({"$set": {"status": entry.status}})
-         status_updates += 1
-
-         new_log_entries += 1
          log_entry = LogEntry(entry.date, entry_id, entry.status)
          log_result = log_col.insert_one(log_entry.to_dict())
          log_id = log_result.inserted_id
+
+         status_updates += 1
+         new_log_entries += 1
          logging.info(f"Stored new event {entry_id} and log_id {log_id} status: {status}")
 
 #
