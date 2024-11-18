@@ -109,13 +109,6 @@ for entry in entries:
          db_entry.update({"$set": {"status": entry.status}})
          status_updates += 1
 
-      # Do we have a matching log entry for the current status
-      log_event = log_col.find_one({"entry_owner": entry_id, "status": db_status})
-      if log_event:
-         # We have already recorded this status just continue to the next record
-         logging.debug("Skipping {entry} as we already indexed in present state")
-         skipped += 1
-      else:
          new_log_entries += 1
          log_entry = LogEntry(entry.date, entry_id, entry.status)
          log_result = log_col.insert_one(log_entry.to_dict())
