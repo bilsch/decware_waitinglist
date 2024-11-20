@@ -18,7 +18,6 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
     handlers=[
-        logging.FileHandler(Config().log_file()),
         logging.StreamHandler()
     ]
 )
@@ -107,6 +106,7 @@ for entry in entries:
       if entry.status != db_status:
          logging.info(f"Update status for id: {entry_id} for {db_name} from status of ({db_status}) to ({entry.status})")
          db_entry.update({"$set": {"status": entry.status}})
+         entry_col.update_one( {"_id": entry_id}, {"$set": {"status": entry.status}})
          log_entry = LogEntry(datetime.now(), entry_id, entry.status)
          log_result = log_col.insert_one(log_entry.to_dict())
          log_id = log_result.inserted_id
@@ -143,8 +143,6 @@ for db_entry in db_entries:
       status = db_entry.get("status")
       logging.info(f"Updating {id} from status {status} - setting status to Complete")
 
-      # TODO: This ... should work
-      # update_result = db_entry.update({"$set": {"status": "Complete"}})
       update_result = entry_col.update_one({"_id": id}, {"$set": {"status": "Complete"}})
 
       logging.debug(update_result)
