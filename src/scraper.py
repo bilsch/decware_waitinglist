@@ -114,6 +114,9 @@ for entry in entries:
          status_updates += 1
          new_log_entries += 1
          logging.info(f"Stored new event {entry_id} and log_id {log_id} status: {status}")
+      else:
+         logging.debug(f"skip status update for {entry_id} - no change")
+         skipped += 1
 
 #
 # Loop over database entries
