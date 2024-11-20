@@ -163,13 +163,13 @@ logging.info("Generating stats")
 
 total_new_count = entry_col.count_documents({"status": "New"})
 non_new = entry_col.count_documents({
-   "status": 
-      [
-         { "$ne": "New" },
-         { "$ne": "Complete" }
+   "status": {
+      "$nin": [
+         "New",
+         "Complete"
       ]
    },
-)
+})
 before_bill = entry_col.count_documents({ "date": { "$lt": bill_order_dt }, "status": "New" })
 
 logging.info(f"Inserted {inserted_entries} new entries")
