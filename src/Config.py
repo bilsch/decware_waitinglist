@@ -17,3 +17,6 @@ class Config:
 
     def database_name(self):
         return self.config.get("scraper").get("database_name")
+
+    def rolling_completion_log_file(self):
+        return self.config.get("scraper").get("rolling_completion_log_file")
