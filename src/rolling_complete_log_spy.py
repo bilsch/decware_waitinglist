@@ -13,6 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
     handlers=[
+        logging.FileHandler(Config().rolling_completion_log_file()),
         logging.StreamHandler()
     ]
 )
@@ -49,7 +50,7 @@ for completed_entry in completed_over_time:
     took = complete_date - order_date
 
     completed_days.append(took.days)
-    logging.info(f"Order {entry_id} completed on {completed_date_short} took {took.days} days to complete")
+    logging.debug(f"Order {entry_id} completed on {completed_date_short} took {took.days} days to complete")
 
 avg = np.average(completed_days)
 min = np.min(completed_days)
@@ -57,18 +58,14 @@ max = np.max(completed_days)
 
 logging.info(f"Min: {min}, Max: {max}, Avg: {avg}")
 
-for p in [80, 90, 99]:
-    x = int(np.percentile(completed_days, p))
-    logging.info(f"{p} percentile: {x}")
-
 my_order_date = datetime(2024, 11, 3)
-min_days_from_now = my_order_date + timedelta(days=int(min))
 avg_days_from_now = my_order_date + timedelta(days=int(avg))
 max_days_from_now = my_order_date + timedelta(days=int(max))
-pcnt_days_from_now = my_order_date + timedelta(days=int(np.percentile(completed_days, 99)))
 
 logging.info("Projected completion dates")
-logging.info(f"Min:             {min_days_from_now}")
 logging.info(f"avg:             {avg_days_from_now}")
 logging.info(f"max:             {max_days_from_now}")
-logging.info(f"99th percentile: {pcnt_days_from_now}")
+
+for p in [80, 90, 99]:
+    x = my_order_date + timedelta(days=int(np.percentile(completed_days, p)))
+    logging.info(f"{p}th percentile: {x}")
